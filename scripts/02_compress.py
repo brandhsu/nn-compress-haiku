@@ -14,6 +14,7 @@ train = __import__("01_train")
 hk = train.hk
 Batch = train.Batch
 net_fn = train.net_fn
+normalize = train.normalize
 load_dataset = train.load_dataset
 compute_accuracy = train.compute_accuracy
 
@@ -40,11 +41,12 @@ def compress_params(params: hk.Params, compression_func, fraction: float) -> hk.
 
 
 def compute_eval_metrics(
-    params: hk.Params, batch: Batch, n_samples: int
+    net: hk.Module, params: hk.Params, batch: Batch, n_samples: int
 ) -> Tuple[List[float], List[float]]:
     """Computes model accuracy and inference time.
 
     Args:
+        net (hk.Module): A module defining the model structure.
         params (hk.Params): A nested dict of model parameters.
         batch (Batch): A tuple containing (data, labels).
         n_samples (int): Number of times to evaluate.
@@ -56,7 +58,7 @@ def compute_eval_metrics(
     accuracy_list = []
     for _ in range(n_samples):
         start = time.time()
-        acc = compute_accuracy(params, batch)
+        acc = compute_accuracy(net, params, batch)
         end = time.time()
         latency = end - start
         latency_list.append(latency)
@@ -66,6 +68,7 @@ def compute_eval_metrics(
 
 
 def eval_at_multiple_fractions(
+    net: hk.Module,
     params: hk.Params,
     dataset: Iterator[tuple],
     compression_func,
@@ -75,6 +78,7 @@ def eval_at_multiple_fractions(
     """Evaluate model accuracy and inference time at multiple compression fractions.
 
     Args:
+        net (hk.Module): A module defining the model structure.
         params (hk.Params): A nested dict of model parameters.
         batch (Batch): A tuple containing (data, labels).
         compression_func: Compression function, any of the functions defined in `nn_compress_haiku`.
@@ -82,16 +86,22 @@ def eval_at_multiple_fractions(
         n_samples (int): Number of times to evaluate (defaults to 50).
 
     Returns:
-        Tuple[List[Tuple[float]], List[Tuple[float]]]: A tuple containing n_fractions of accuracies and latencies.
+        Tuple[List[Tuple[float]], List[Tuple[float]]]: A tuple containing n_fractions of (fractions, accuracies) and (fractions, latencies).
     """
     fractions_and_accuracies = []
     fractions_and_latencies = []
 
-    for fraction in np.linspace(1.0, 0.1, n_fractions):
-        print(f"Evaluating the model at {fraction}")
+    for fraction in np.linspace(0, 0.9, n_fractions):
+        print(f"Evaluating the model at {fraction * 100:.2f}% compression")
 
-        new_params = compress_params(params, compression_func, fraction)
-        accuracy, latency = compute_eval_metrics(new_params, next(dataset), n_samples)
+        compression_fraction = fraction
+        if "svd" in compression_func.__name__:
+            compression_fraction = 1 - compression_fraction
+
+        new_params = compress_params(params, compression_func, compression_fraction)
+        accuracy, latency = compute_eval_metrics(
+            net, new_params, next(dataset), n_samples
+        )
 
         print(
             f"Compression Fraction / Accuracy: "
@@ -191,7 +201,8 @@ if __name__ == "__main__":
     params = pickle.load(open(args.model_path, "rb"))
 
     # Fourth, evaluate the model at multiple compression fractions.
-    accuracies, latencies = eval_at_multiple_fractions(
+    fractions_and_accuracies, fractions_and_latencies = eval_at_multiple_fractions(
+        net,
         params,
         test,
         compression_func[args.compression_func],
@@ -201,5 +212,5 @@ if __name__ == "__main__":
 
     # Fifth, save plots.
     Path(args.save_dir).mkdir(parents=True, exist_ok=True)
-    plot_accuracy(args.compression_func, args.save_dir, accuracies)
-    plot_latency(args.compression_func, args.save_dir, latencies)
+    plot_accuracy(fractions_and_accuracies, args.compression_func, args.save_dir)
+    plot_latency(fractions_and_latencies, args.compression_func, args.save_dir)

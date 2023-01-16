@@ -94,11 +94,11 @@ def compute_loss(params: hk.Params, batch: Batch) -> jnp.ndarray:
     return softmax_xent + (1e-4 * l2_loss)
 
 
-@jax.jit
-def compute_accuracy(params: hk.Params, batch: Batch) -> jnp.ndarray:
+def compute_accuracy(net: hk.Module, params: hk.Params, batch: Batch) -> jnp.ndarray:
     """Compute the accuracy of the network
 
     Args:
+        net (hk.Module): A module defining the model structure.
         params (hk.Params): A nested dict of model parameters.
         batch (Batch): A tuple containing (data, labels).
 
@@ -257,8 +257,8 @@ if __name__ == "__main__":
     # Fourth, training and evaluation loop.
     for step in range(args.train_steps):
         if step % args.eval_steps == 0:
-            val_accuracy = compute_accuracy(avg_params, next(validation))
-            test_accuracy = compute_accuracy(avg_params, next(test))
+            val_accuracy = compute_accuracy(net, avg_params, next(validation))
+            test_accuracy = compute_accuracy(net, avg_params, next(test))
             val_accuracy, test_accuracy = jax.device_get((val_accuracy, test_accuracy))
             print(
                 f"[Step {step}] Validation / Test accuracy: "

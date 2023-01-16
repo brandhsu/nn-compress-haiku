@@ -1,6 +1,6 @@
-# Neural Network Model Compression - [Haiku](https://github.com/deepmind/dm-haiku)
+# Neural Network Compression - [Haiku](https://github.com/deepmind/dm-haiku)
 
-A Haiku implementation of several common motifs to compress neural networks (pruning, quantization, factorization).
+Implementation of several neural network compression techniques (pruning, quantization, factorization), in Haiku.
 
 <div align='center'>
   <kbd>
@@ -10,12 +10,13 @@ A Haiku implementation of several common motifs to compress neural networks (pru
   </kbd>
 </div>
 
-For an introduction to neural network model compression, see [4-popular-model-compression-techniques-explained](https://xailient.com/blog/4-popular-model-compression-techniques-explained).
+For an introduction to neural network compression, see [4-popular-model-compression-techniques-explained](https://xailient.com/blog/4-popular-model-compression-techniques-explained).
 
 ## Installation
 
 ```shell
-$ pip install -r requirements.txt
+$ git clone https://github.com/Brandhsu/nn-compress-haiku
+$ pip install -r nn-compress-haiku/requirements.txt
 ```
 
 ## Usage
@@ -29,7 +30,7 @@ $ python scripts/01_train.py --save-dir models
 Then compress it!
 
 ```shell
-$ python scripts/02_compress.py --compress-func svd --save-dir figs
+$ python scripts/02_compress.py --model-path models/params.pkl --compress-func svd --save-dir figs
 ```
 
 > Note: Compression happens post-training in a layer-by-layer (local) fashion.
@@ -42,7 +43,7 @@ $ python scripts/02_compress.py --compress-func svd --save-dir figs
 | [quantization](nn_compress_haiku/quant.py) | Accuracy | Latency |
 | [factorization](nn_compress_haiku/svd.py)  | Accuracy | Latency |
 
-> Note: The results shown are based on the default settings.
+> Note: The results shown are attained with the default settings.
 
 Remarks:
 
