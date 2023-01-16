@@ -1,0 +1,7 @@
+jax
+dm-haiku
+optax
+tensorflow_datasets
+numpy
+matplotlib
+scikit-learn
