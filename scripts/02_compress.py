@@ -11,13 +11,10 @@ from typing import Iterator, List, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-train = __import__("01_train")
-hk = train.hk
-Batch = train.Batch
-net_fn = train.net_fn
-normalize = train.normalize
-load_dataset = train.load_dataset
-compute_accuracy = train.compute_accuracy
+module = __import__("01_train", globals(), locals(), ['*'])
+for k in dir(module):
+    if not k.startswith("_"):
+        locals()[k] = getattr(module, k)
 
 sys.path.insert(0, "./")
 from nn_compress_haiku import prune, quant, svd
