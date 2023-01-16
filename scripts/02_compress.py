@@ -2,6 +2,7 @@
 
 import argparse
 import pickle
+import sys
 import time
 from copy import deepcopy
 from pathlib import Path
@@ -18,6 +19,7 @@ normalize = train.normalize
 load_dataset = train.load_dataset
 compute_accuracy = train.compute_accuracy
 
+sys.path.insert(0, "./")
 from nn_compress_haiku import prune, quant, svd
 
 

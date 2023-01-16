@@ -30,7 +30,7 @@ $ python scripts/01_train.py --save-dir models
 Then compress it!
 
 ```shell
-$ python scripts/02_compress.py --model-path models/params.pkl --compress-func svd --save-dir figs
+$ python scripts/02_compress.py --model-path models/params.pkl --compression-func svd --save-dir figs
 ```
 
 > Note: Compression happens post-training in a layer-by-layer (local) fashion.

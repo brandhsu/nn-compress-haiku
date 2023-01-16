@@ -1,6 +1,7 @@
 jax
 dm-haiku
 optax
+tensorflow
 tensorflow_datasets
 numpy
 matplotlib
