@@ -39,16 +39,16 @@ python scripts/02_compress.py --model-path models/params.pkl --compression-func 
 
 ## Results
 
-| Type                                                                               | Accuracy                                                  | Latency                                                  |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------- |
-| [pruning](nn_compress_haiku/prune.py): prunes weights based on magnitude           | <kbd><img src='figs/accuracy-prune.png' width=360/></kbd> | <kbd><img src='figs/latency-prune.png' width=360/></kbd> |
-| [quantization](nn_compress_haiku/quant.py): linear quantization (uniform sampling) | <kbd><img src='figs/accuracy-quant.png' width=360/></kbd> | <kbd><img src='figs/latency-quant.png' width=360/></kbd> |
-| [factorization](nn_compress_haiku/svd.py): low-rank reconstruction via SVD         | <kbd><img src='figs/accuracy-svd.png' width=360/></kbd>   | <kbd><img src='figs/latency-svd.png' width=360/></kbd>   |
+| Type                                                                                 | Accuracy                                                  | Latency                                                  |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------- |
+| [pruning](nn_compress_haiku/prune.py): masked pruning via weight magnitude           | <kbd><img src='figs/accuracy-prune.png' width=360/></kbd> | <kbd><img src='figs/latency-prune.png' width=360/></kbd> |
+| [quantization](nn_compress_haiku/quant.py): linear quantization via uniform sampling | <kbd><img src='figs/accuracy-quant.png' width=360/></kbd> | <kbd><img src='figs/latency-quant.png' width=360/></kbd> |
+| [factorization](nn_compress_haiku/svd.py): low-rank reconstruction via svd           | <kbd><img src='figs/accuracy-svd.png' width=360/></kbd>   | <kbd><img src='figs/latency-svd.png' width=360/></kbd>   |
 
 > Note: The results shown are attained on the CIFAR-10 test set with default settings.
 
 Remarks:
 
 - **Accuracy tends to decreases with compression**, however, both linear quantization and weight pruning were surprisingly robust.
-  - This result is interesting because it might suggest that there isn't much linear structure stored in the weights of a neural network, and instead, there are only a small handful of weights responsible for the performance of the neural network.
+  - This result is interesting because it might suggest that there isn't much linear structure stored in the weights of a neural network, and instead, there may only be a reduce set of weights responsible for its overall performance.
 - **Latency does not decrease with compression** since the number of matrix multiplication operations remain the same (Jax has a [compilation step](https://github.com/google/jax/issues/4495) which may be misleading).

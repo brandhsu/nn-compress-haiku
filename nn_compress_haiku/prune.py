@@ -11,12 +11,12 @@ def prune(weight: jnp.ndarray, prune_fraction: float) -> jnp.ndarray:
     Returns:
         jnp.ndarray: sparsified weight matrix.
     """
-    vect = weight.reshape(-1)
-    num_zeros = round(prune_fraction * len(vect))
-    idx = jnp.argsort(jnp.abs(vect))
+    vector = weight.reshape(-1)
+    num_zeros = round(prune_fraction * len(vector))
+    idx = jnp.argsort(jnp.abs(vector))
     prune_idx = idx[:num_zeros]
 
-    mask = jnp.ones_like(vect)
+    mask = jnp.ones_like(vector)
     mask = mask.at[prune_idx].set(0)
 
-    return (vect * mask).reshape(weight.shape)
+    return (vector * mask).reshape(weight.shape)

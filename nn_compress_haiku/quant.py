@@ -1,4 +1,3 @@
-import numpy as np
 import jax.numpy as jnp
 from sklearn.cluster import MiniBatchKMeans
 
@@ -17,13 +16,13 @@ def quant_kmeans(
     Returns:
         jnp.ndarray: quantized weight matrix.
     """
-    vect = weight.reshape(-1)
-    k = len(vect) - round(quant_fraction * len(vect))
+    vector = weight.reshape(-1)
+    k = len(vector) - round(quant_fraction * len(vector))
     if k == 0:
         k += 1
 
     kmeans = MiniBatchKMeans(n_clusters=k, random_state=random_state).fit(
-        vect.reshape(-1, 1)
+        vector.reshape(-1, 1)
     )
     centroids = jnp.array(kmeans.cluster_centers_[kmeans.labels_])
 
@@ -40,13 +39,39 @@ def quant(weight: jnp.ndarray, quant_fraction: float) -> jnp.ndarray:
     Returns:
         jnp.ndarray: quantized weight matrix.
     """
-    vect = weight.reshape(-1)
-    k = len(vect) - round(quant_fraction * len(vect))
-    if k == 0:
-        k += 1
+    vector = weight.reshape(-1)
+    k = len(vector) - round(quant_fraction * len(vector))
+    if k < 2:
+        return jnp.ones(vector.size) * vector.mean().reshape(weight.shape)
 
-    samples = np.linspace(vect.min(), vect.max(), k)
-    closest = lambda v: np.argmin(np.abs(v - samples))
-    assign = np.vectorize(closest)
+    samples = jnp.linspace(vector.min(), vector.max(), k)
+    labels = argclosest(vector, samples)
 
-    return jnp.reshape(samples[assign(vect)], weight.shape)
+    return samples[labels].reshape(weight.shape)
+
+
+def argclosest(vector: jnp.ndarray, samples: jnp.ndarray) -> jnp.array:
+    """Finds the index of the closest value in an array for each element in another array.
+
+    Example:
+        vector = jnp.array([1, 2, 3, 4, 5])
+        samples = jnp.array([2, 7])
+        indices = argclosest(vector, samples)
+        assert (indices == jnp.array([0, 0, 0, 0, 1])).all()
+
+        indices = argclosest(samples, vector)
+        assert (indices == jnp.array([1, 4])).all()
+
+    Args:
+        vector (jnp.ndarray): input array.
+        samples (jnp.ndarray): array being compared (must be sorted).
+
+    Returns:
+        jnp.array: indices of the closest
+    """
+    idx_r = jnp.searchsorted(samples, vector)
+    idx_r = jnp.clip(idx_r, 0, samples.size - 1)
+    idx_l = jnp.clip(idx_r - 1, 0, samples.size - 1)
+    dist_r = samples[idx_r] - vector
+    dist_l = vector - samples[idx_l]
+    return jnp.where(dist_r <= dist_l, idx_r, idx_l)
