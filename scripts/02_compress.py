@@ -125,6 +125,7 @@ def plot_accuracy(fractions_and_accuracies: List[Tuple[float]], title: str, path
     plt.ylabel("Accuracy")
     plt.legend()
     plt.savefig(f"{path}/accuracy-{title}.png")
+    plt.close()
 
 
 def plot_latency(fractions_and_latencies: List[Tuple[float]], title: str, path: str):
@@ -135,6 +136,7 @@ def plot_latency(fractions_and_latencies: List[Tuple[float]], title: str, path: 
     plt.ylabel("Latency (sec)")
     plt.legend()
     plt.savefig(f"{path}/latency-{title}.png")
+    plt.close()
 
 
 if __name__ == "__main__":

@@ -15,8 +15,10 @@ For an introduction to neural network compression, see [4-popular-model-compress
 ## Installation
 
 ```shell
-$ git clone https://github.com/Brandhsu/nn-compress-haiku
-$ pip install -r nn-compress-haiku/requirements.txt
+git clone https://github.com/Brandhsu/nn-compress-haiku/
+cd nn-compress-haiku
+git lfs pull
+pip install -r requirements.txt
 ```
 
 ## Usage
@@ -24,28 +26,29 @@ $ pip install -r nn-compress-haiku/requirements.txt
 First, train a model on [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html).
 
 ```shell
-$ python scripts/01_train.py --save-dir models
+python scripts/01_train.py --save-dir models
 ```
 
 Then compress it!
 
 ```shell
-$ python scripts/02_compress.py --model-path models/params.pkl --compression-func svd --save-dir figs
+python scripts/02_compress.py --model-path models/params.pkl --compression-func svd --save-dir figs
 ```
 
 > Note: Compression happens post-training in a layer-by-layer (local) fashion.
 
 ## Results
 
-| Type                                       | Accuracy | Latency |
-| ------------------------------------------ | -------- | ------- |
-| [pruning](nn_compress_haiku/prune.py)      | Accuracy | Latency |
-| [quantization](nn_compress_haiku/quant.py) | Accuracy | Latency |
-| [factorization](nn_compress_haiku/svd.py)  | Accuracy | Latency |
+| Type                                       | Description                            | Accuracy                                                   | Latency                                                   |
+| ------------------------------------------ | -------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------- |
+| [pruning](nn_compress_haiku/prune.py)      | Prunes weights based on magnitude      | <kbd><img src='figs/accuracy-prune.png' height=240/></kbd> | <kbd><img src='figs/latency-prune.png' height=240/></kbd> |
+| [quantization](nn_compress_haiku/quant.py) | Linear quantization (uniform sampling) | <kbd><img src='figs/accuracy-quant.png' height=240/></kbd> | <kbd><img src='figs/latency-quant.png' height=240/></kbd> |
+| [factorization](nn_compress_haiku/svd.py)  | Low-rank reconstruction via SVD        | <kbd><img src='figs/accuracy-svd.png' height=240/></kbd>   | <kbd><img src='figs/latency-svd.png' height=240/></kbd>   |
 
-> Note: The results shown are attained with the default settings.
+> Note: The results shown are attained on the CIFAR-10 test set with default settings.
 
 Remarks:
 
-- Accuracy decreases with compression, and seems to perform best on the CIFAR-10 test set.
-- Latency does not decrease with compression since the number of matrix multiplication operations remain the same.
+- **Accuracy tends to decreases with compression**, however, both linear quantization and weight pruning were fairly robust.
+  - This result is interesting because it might suggest that there isn't much linear structure stored in the weights of a neural network, and instead, there are only a small handful of weights responsible for the performance of the neural network.
+- **Latency does not decrease with compression** since the number of matrix multiplication operations remain the same (Jax has a [compilation step](https://github.com/google/jax/issues/4495) which may be misleading).
