@@ -50,5 +50,5 @@ python scripts/02_compress.py --model-path models/params.pkl --compression-func 
 Remarks:
 
 - **Accuracy tends to decreases with compression**, however, both linear quantization and weight pruning were surprisingly robust.
-  - This result is interesting because it might suggest that there isn't much linear structure stored in the weights of a neural network, and instead, there may only be a reduce set of weights responsible for its overall performance.
-- **Latency does not decrease with compression** since the number of matrix multiplication operations remain the same (Jax has a [compilation step](https://github.com/google/jax/issues/4495) which may be misleading).
+  - This result is interesting because it might suggest that there isn't much linear structure stored in the weights of a neural network, and instead, a relatively small and sparse subset of weights may be responsible for its overall performance.
+- **Latency does not decrease with compression** since the number of matrix multiplication operations remain the same ([JAX](https://github.com/google/jax) has a [compilation step](https://github.com/google/jax/issues/4495) which may be misleading).

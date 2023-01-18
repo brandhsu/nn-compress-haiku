@@ -11,7 +11,14 @@ def svd(weight: jnp.ndarray, rank_fraction: float) -> jnp.ndarray:
     Returns:
         jnp.ndarray: low rank approximation of weight matrix.
     """
+    rank = round(rank_fraction * min(weight.shape))
+
+    if rank >= min(weight.shape):
+        return weight
+
+    if rank <= 0:
+        return jnp.zeros_like(weight)
+
     u, s, v = jnp.linalg.svd(weight, full_matrices=False)
-    rank = round(rank_fraction * s.shape[-1])
 
     return u[:, :rank] * s[:rank] @ v[:rank, :]

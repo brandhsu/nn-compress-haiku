@@ -13,6 +13,13 @@ def prune(weight: jnp.ndarray, prune_fraction: float) -> jnp.ndarray:
     """
     vector = weight.reshape(-1)
     num_zeros = round(prune_fraction * len(vector))
+
+    if num_zeros >= len(vector):
+        return jnp.zeros_like(weight)
+
+    if num_zeros <= 0:
+        return weight
+
     idx = jnp.argsort(jnp.abs(vector))
     prune_idx = idx[:num_zeros]
 

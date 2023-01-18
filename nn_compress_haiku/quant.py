@@ -17,9 +17,14 @@ def quant_kmeans(
         jnp.ndarray: quantized weight matrix.
     """
     vector = weight.reshape(-1)
-    k = len(vector) - round(quant_fraction * len(vector))
-    if k == 0:
-        k += 1
+    unique = jnp.unique(vector).size
+    k = unique - round(quant_fraction * unique)
+
+    if k >= unique:
+        return weight
+
+    if k <= 0:
+        return jnp.ones_like(weight) * (weight.min() + weight.max()) * 0.5
 
     kmeans = MiniBatchKMeans(n_clusters=k, random_state=random_state).fit(
         vector.reshape(-1, 1)
@@ -40,11 +45,16 @@ def quant(weight: jnp.ndarray, quant_fraction: float) -> jnp.ndarray:
         jnp.ndarray: quantized weight matrix.
     """
     vector = weight.reshape(-1)
-    k = len(vector) - round(quant_fraction * len(vector))
-    if k < 2:
-        return jnp.ones(vector.size) * vector.mean().reshape(weight.shape)
+    unique = jnp.unique(vector).size
+    k = unique - round(quant_fraction * unique)
 
-    samples = jnp.linspace(vector.min(), vector.max(), k)
+    if k >= unique:
+        return weight
+
+    if k <= 0:
+        return jnp.ones_like(weight) * (weight.min() + weight.max()) * 0.5
+
+    samples = jnp.linspace(vector.min(), vector.max(), k + 1)[1:-1]
     labels = argclosest(vector, samples)
 
     return samples[labels].reshape(weight.shape)
