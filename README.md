@@ -60,7 +60,7 @@ In this case, simply training a smaller model with supervised labels performed b
 | [student-alpha-0.5](models/params-kd-alpha-0_5.pkl) | 63.24%        | 421 ms ± 4.52 ms per loop (mean ± std. dev. of 7 runs, 10 loops each) | 295 kB   |
 | [student-alpha-1.0](models/params-kd-alpha-1_0.pkl) | 63.59%        | 418 ms ± 5.12 ms per loop (mean ± std. dev. of 7 runs, 10 loops each) | 295 kB   |
 
-> Note: These checkpoints were created directly after training and did not undergo any extra compression.
+> Note: These checkpoints were created directly after training without post-training compression.
 
 Several other experiments were conducted to measure the impact of post-training compression with respect to accuracy and latency using the following techniques:
 
@@ -72,11 +72,14 @@ Several other experiments were conducted to measure the impact of post-training 
 | --------------------------------------------------- | -------------------------------------------------- |
 | <kbd><img src='figs/accuracy.png' width=480/></kbd> | <kbd><img src='figs/latency.png' width=480/></kbd> |
 
-> Note: The results shown are attained with the teacher model on the CIFAR-10 test set.
+> Note: These results attained with the [teacher model](https://github.com/brandhsu/nn-compress-haiku/blob/master/scripts/02_train_kd.py#L18-L50) on the CIFAR-10 test set.
 
-Remarks:
+### Remarks
 
 - **Accuracy tends to decreases with compression**, however, both linear quantization and weight pruning were surprisingly robust.
-  - This result is interesting because it might suggest that there isn't much linear structure stored in the weights of a neural network, and instead, a relatively small and sparse subset of weights may be responsible for its overall performance.
-- **Latency does not decrease with compression** since the number of matrix multiplication operations remain the same ([JAX](https://github.com/google/jax) has a [compilation step](https://github.com/google/jax/issues/4495) which may be misleading).
-  - More work would need to be done to reap the benefits of compression with respect to latency such as factorizing the weights (in the case of svd), sparse matrix formats (in the case of quantization and pruning), sparse computation hardware, etc.).
+  - This result is intriguing as it demonstrates the superiority of unstructured compression techniques over structured compression techniques.
+  - Some hypotheses for further investigation:
+    - Important learned weights may lack structure due to the random nature of how initial weights are set.
+    - Poor low-rank approximation may be due to noise/outliers (weights having poor SNR).
+- **Latency does not decrease with compression** (in the plot above) since the number of matrix multiplication operations remain the same (NOTE: 0% compression is an outlier due to [JAX compilation](https://github.com/google/jax/issues/4495)).
+  - Additional work is required to obtain the benefits of compression with respect to latency such as factorizing the weights (in the case of svd), sparse matrix formats (in the case of quantization and pruning), sparse computation hardware, etc.).
